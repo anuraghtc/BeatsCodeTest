@@ -2,18 +2,20 @@ package sample.com.beatscodetest.ui;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.ActionBarActivity;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 
 import sample.com.beatscodetest.R;
 
 /*
 * Activity to query and show album search results.
 * */
-public class AlbumSearchActivity extends ActionBarActivity {
+public class AlbumSearchActivity extends FragmentActivity {
 
     private static final String TAG = AlbumSearchActivity.class.getSimpleName();
 
@@ -23,11 +25,24 @@ public class AlbumSearchActivity extends ActionBarActivity {
         setContentView(R.layout.activity_album_search);
         if (savedInstanceState == null) {
             FragmentManager manager = getSupportFragmentManager();
-            Fragment container = manager.findFragmentById(R.layout.fragment_previous_serch_keyword);
+            Fragment fragment = new PreviousSearchViewFragment();
             manager.beginTransaction()
-                    .add(R.id.container, container)
+                    .add(R.id.container, fragment)
                     .commit();
         }
+
+        final ImageButton searchButton = (ImageButton)findViewById(R.id.search_button);
+        final EditText searchText = (EditText)findViewById(R.id.search_text);
+
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String keyword = searchText.getText().toString();
+                if(keyword != null && keyword.trim().isEmpty()==false){
+                    startSearch(keyword.trim());
+                }
+            }
+        });
     }
 
     @Override
@@ -37,47 +52,17 @@ public class AlbumSearchActivity extends ActionBarActivity {
 
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_album_search, menu);
-/*
-        // Associate searchable configuration with the SearchView
-        SearchManager searchManager =
-                (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView =
-                (SearchView) menu.findItem(R.id.search).getActionView();
-        searchView.setSearchableInfo(
-                searchManager.getSearchableInfo(getComponentName()));
-*/
 
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        switch (item.getItemId()) {
-            case R.id.search:
-                startSearch();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    public void startSearch() {
+    public void startSearch(String keyword) {
         ShowSearchResultFragment newFragment = new ShowSearchResultFragment();
-        newFragment.invokeAlbumSearchRequest("Justin");
-//        Bundle args = new Bundle();
-//        args.putString(ShowSearchResultFragment.SEARCH_KEYORD, "Justin");
-//        newFragment.setArguments(args);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        Bundle searchParams = new Bundle();
+        searchParams.putString(ShowSearchResultFragment.SEARCH_KEYORD, keyword);
+        newFragment.setArguments(searchParams);
         //Replace previous fragment with new fragment
         transaction.replace(R.id.container, newFragment);
-//        transaction.addToBackStack(null);
+        transaction.addToBackStack("search_result");
         transaction.commit();
-
 
     }
 

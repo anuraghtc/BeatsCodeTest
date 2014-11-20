@@ -1,6 +1,10 @@
 package sample.com.beatscodetest.ui;
 
+import android.app.Activity;
+import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,13 +29,14 @@ import sample.com.beatscodetest.model.NetworkRequestHandler;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class ShowSearchResultFragment extends android.support.v4.app.ListFragment{
+public class ShowSearchResultFragment extends Fragment {
     public static final String SEARCH_KEYORD = "search_keyword";
     private static final String TAG = ShowSearchResultFragment.class.getSimpleName();
 
     AlbumSearchAdapter mSearchResultdapter;
 
     public ShowSearchResultFragment() {
+
     }
 
     @Override
@@ -48,12 +53,20 @@ public class ShowSearchResultFragment extends android.support.v4.app.ListFragmen
 
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        //Query and load the search results.
+        Bundle args = getArguments();
+        String searchKeyword = "";
+        if (args != null && args.isEmpty() == false) searchKeyword = args.getString(SEARCH_KEYORD);
+        invokeAlbumSearchRequest(searchKeyword);
+    }
+
     public void invokeAlbumSearchRequest(String keyword) {
 
-        if (keyword == null || keyword.isEmpty()) return;
-
         //Make album search
-        String serchURL = String.format(Locale.US, Config.ALBUM_SEARCH_URI, keyword, 0);
+        String serchURL = String.format(Locale.US, Config.ALBUM_SEARCH_URI, Uri.encode(keyword), Uri.encode("0"));
 
         JsonObjectRequest jsonObjRequest = new JsonObjectRequest
                 (Request.Method.GET, serchURL, null, new Response.Listener() {
